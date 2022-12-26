@@ -168,7 +168,7 @@ functions:
     handler: src/lambda/http/generateUploadUrl.handler
     events:
       - http:
-          method: put
+          method: post
           path: todos/{todoId}/attachment
           cors: true
           authorizer: Auth
