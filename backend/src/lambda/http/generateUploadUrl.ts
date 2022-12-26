@@ -1,37 +1,38 @@
-import 'source-map-support/register';
+import 'source-map-support/register'
 
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import * as middy from 'middy';
-import { cors, httpErrorHandler } from 'middy/middlewares';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
+import * as middy from 'middy'
+import { cors, httpErrorHandler } from 'middy/middlewares'
 
-import { createAttachmentPresignedUrl } from '../helpers/attachmentUtil';
-import { createLogger } from '../../utils/logger';
-
-const logger = createLogger('attachment');
+import { createAttachmentPresignedUrl } from '../../businessLogic/todos'
+import { getUserId } from '../utils'
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    logger.info('Processing event: ', event);
-    const todoId = event.pathParameters.todoId;
-    const uploadUrl = createAttachmentPresignedUrl(todoId);
-
-    logger.info('Upload url: %s', uploadUrl);
+    const todoId: string = event.pathParameters.todoId;
+    
+    const userId: string = getUserId(event);
+    
+    const returnUrl: string = await createAttachmentPresignedUrl(todoId, userId);
 
     return {
-      statusCode: 202,
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': '*',
+        'Access-Control-Allow-Credentials': true
+      },
       body: JSON.stringify({
-        uploadUrl
+        uploadUrl: returnUrl
       })
-    }
+    };
   }
 )
 
 handler
   .use(httpErrorHandler())
-  .use(cors(
-    {
-      origin: "*",
-      credentials: true,
-    }
-  ))
-
+  .use(
+    cors({
+      credentials: true
+    })
+  )

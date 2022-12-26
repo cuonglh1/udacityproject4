@@ -4,37 +4,34 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as middy from 'middy'
 import { cors, httpErrorHandler } from 'middy/middlewares'
 
-import { updateTodo } from '../businessLogic/todos'
+import { updateTodo } from '../../businessLogic/todos'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
-import { createLogger } from '../../utils/logger';
-import { getUserId } from '../../auth/utils'
-
-const logger = createLogger('Update Todo')
+import { getUserId } from '../utils'
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    logger.info('Starting update todo ', event);
     const todoId = event.pathParameters.todoId;
-    const userId: string = getUserId(event);
     const updatedTodo: UpdateTodoRequest = JSON.parse(event.body);
-    logger.info('Update todo ', updatedTodo)
+    
+    const userId = getUserId(event);
 
-    const updatedItem = await updateTodo(userId, todoId, updatedTodo);
+    await updateTodo(todoId, userId, updatedTodo);
 
     return {
-      statusCode: 200,
-      body: JSON.stringify({
-        item: updatedItem
-      })
-    }
+      statusCode: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
+      body: null
+    };
   }
 )
 
 handler
   .use(httpErrorHandler())
-  .use(cors(
-    {
-      origin: "*",
-      credentials: true,
-    }
-  ))
+  .use(
+    cors({
+      credentials: true
+    })
+  )

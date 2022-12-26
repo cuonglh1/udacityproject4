@@ -1,21 +1,26 @@
+import 'source-map-support/register'
+
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as middy from 'middy'
 import { cors, httpErrorHandler } from 'middy/middlewares'
-import 'source-map-support/register'
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 
-import { deleteTodo } from '../businessLogic/todos'
-import { getUserId } from '../../auth/utils'
-import { removeAttachment } from '../helpers/attachmentUtil'
+import { deleteTodo } from '../../businessLogic/todos'
+import { getUserId } from '../utils'
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const todoId = event.pathParameters.todoId;
-    const userId: string = getUserId(event);
-    await deleteTodo(userId, todoId);
-    await removeAttachment(todoId);
+    const todoId: string = event.pathParameters.todoId;
 
+    const userId: string = getUserId(event);
+
+    await deleteTodo(todoId, userId);
+    
     return {
-      statusCode: 200,
+      statusCode: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
       body: JSON.stringify({})
     };
   }
@@ -24,10 +29,7 @@ export const handler = middy(
 handler
   .use(httpErrorHandler())
   .use(
-    cors(
-      {
-        origin: "*",
-        credentials: true,
-      }
-    )
+    cors({
+      credentials: true
+    })
   )

@@ -11,7 +11,7 @@ plugins:
   - serverless-offline
 provider:
   name: aws
-  runtime: nodejs14.x
+  runtime: nodejs12.x
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
 
@@ -26,7 +26,7 @@ provider:
     TODOS_TABLE: Todos-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
     #CONNECTIONS_TABLE: Connections-${self:provider.stage}
-    ATTACHMENT_S3_BUCKET: serverless-c4-todo-images-cuonglh6-${self:provider.stage}
+    ATTACHMENT_S3_BUCKET: serverless-c4-todo-cuonglh6-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     AUTH_0_SECRET_ID: Auth0Secret-${self:provider.stage}
     AUTH_0_SECRET_FIELD: SXudh6OKHDG27c2di3k7YJYm4dfFx2ciqCP_F5XlgIguwJPZ6GL9a5oBFjybxs79
@@ -168,7 +168,7 @@ functions:
     handler: src/lambda/http/generateUploadUrl.handler
     events:
       - http:
-          method: post
+          method: put
           path: todos/{todoId}/attachment
           cors: true
           authorizer: Auth
